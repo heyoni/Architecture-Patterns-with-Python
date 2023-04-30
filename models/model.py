@@ -15,13 +15,20 @@ class Batch:
         self.refrence = ref
         self.sku = sku
         self.eta = eta
-        self.available_quantity = qty
+        self._purchased_quantity = qty
+        self._allocations = set()
 
     def allocate(self, line: OrderLine) -> None:
         self.available_quantity -= line.qty
 
+    @property
+    def allocated_quantity(self) -> int:
+        return sum(line.qty for line in self._allocations)
+
+    @property
+    def available_quantity(self) -> int:
+        return self._purchased_quantity - self.allocated_quantity
+
     def can_allocate(self, line) -> bool:
         return self.sku == line.sku and self.available_quantity >= line.qty
     
-    def deallocate(self, line: OrderLine) -> None:
-        self.available_quantity += line.qty
